@@ -1,0 +1,33 @@
+manifest_version = 2
+
+[package]
+name = "moonstone/luals-composer"
+version = "0.1.0"
+kind = "lib"
+description = "Register and compose LuaLS plugins in one workspace"
+
+[interpreter]
+name = "lua"
+version = "5.4"
+abi = "5.4"
+
+[scripts]
+test = "lua tests/runner.lua"
+test-e2e = "bash tests/e2e/verify.sh"
+test-e2e-named = "bash tests/e2e/verify_named.sh"
+package = "moon exec ballad -- play partiture.lua"
+
+[[dependencies]]
+name = "moonstone/alter"
+constraint = "^0.1.1"
+role = "runtime"
+
+[[dependencies]]
+name = "moonstone/alter-jsonc"
+constraint = "^0.1.1"
+role = "runtime"
+
+[[dependencies]]
+name = "moonstone/ballad"
+constraint = "^0.3.5"
+role = "tool"
