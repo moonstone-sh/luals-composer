@@ -1,0 +1,85 @@
+name: Publish LuaLS Composer
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing v* tag to publish after a publish-only failure.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish LuaLS Composer registry artifact
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref }}
+      - uses: actions/checkout@v4
+        with:
+          repository: moonstone-sh/moonstone
+          ref: main
+          path: .ci/moonstone
+      - uses: actions/checkout@v4
+        with:
+          repository: moonstone-sh/ballad
+          path: .ci/ballad
+          fetch-depth: 0
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+      - name: Install release tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y b3sum file jq libsqlite3-dev lsof pkg-config zstd
+      - name: Build Moonstone CLI
+        working-directory: .ci/moonstone
+        run: |
+          zig build
+          echo "$GITHUB_WORKSPACE/.ci/moonstone/zig-out/bin" >> "$GITHUB_PATH"
+      - name: Synchronize project
+        run: moon sync
+      - name: Run test suite
+        run: moon run test
+      - name: Export tagged project
+        run: moon run package
+      - name: Verify package surface
+        run: |
+          descriptor=dist/registry/package.toml
+          grep -q '^name = "moonstone/luals-composer"$' "$descriptor"
+          grep -q '^kind = "lib"$' "$descriptor"
+          grep -q '^kind = "source"$' "$descriptor"
+          grep -q 'name = "luals_composer.lua"' "$descriptor"
+          grep -q 'name = "luals_composer/init.lua"' "$descriptor"
+      - name: Verify tag version
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+        run: test "${RELEASE_TAG#v}" = "$(sed -n 's/^version = "\(.*\)"$/\1/p' moonstone.toml | head -1)"
+      - name: Upload immutable GitHub release artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+        run: |
+          set -eu
+          asset="$(find dist/registry -maxdepth 1 -type f \( -name '*.tar.gz' -o -name '*.tar.zst' \) -print -quit)"
+          test -n "$asset"
+          gh release view "$RELEASE_TAG" >/dev/null 2>&1 || gh release create "$RELEASE_TAG" --title "LuaLS Composer $RELEASE_TAG" --generate-notes
+          gh release upload "$RELEASE_TAG" "$asset" --clobber
+          echo "MOONSTONE_ARTIFACT_URL=https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/$(basename "$asset")" >> "$GITHUB_ENV"
+      - name: Publish registry artifact
+        env:
+          MOONSTONE_TOKEN: ${{ secrets.MOONSTONE_TOKEN }}
+          MOONSTONE_ARTIFACT_URL: ${{ env.MOONSTONE_ARTIFACT_URL }}
+        run: |
+          test -n "$MOONSTONE_TOKEN"
+          dist/registry/publish.sh
+      - name: Verify published package is resolvable
+        run: .ci/ballad/scripts/wait-for-publication.sh dist/registry/package.toml

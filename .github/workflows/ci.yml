@@ -1,0 +1,47 @@
+name: LuaLS Composer CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate LuaLS Composer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: moonstone-sh/moonstone
+          ref: main
+          path: .ci/moonstone
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+      - name: Install release tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y b3sum file jq libsqlite3-dev lsof pkg-config zstd
+      - name: Build Moonstone CLI
+        working-directory: .ci/moonstone
+        run: |
+          zig build
+          echo "$GITHUB_WORKSPACE/.ci/moonstone/zig-out/bin" >> "$GITHUB_PATH"
+      - name: Synchronize project
+        run: moon sync
+      - name: Run test suite
+        run: moon run test
+      - name: Export release candidate with Ballad
+        run: moon run package
+      - name: Verify package surface
+        run: |
+          descriptor=dist/registry/package.toml
+          grep -q '^name = "moonstone/luals-composer"$' "$descriptor"
+          grep -q '^kind = "lib"$' "$descriptor"
+          grep -q '^kind = "source"$' "$descriptor"
+          grep -q 'name = "luals_composer.lua"' "$descriptor"
+          grep -q 'name = "luals_composer/init.lua"' "$descriptor"
