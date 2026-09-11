@@ -9,6 +9,11 @@ on:
         description: Existing v* tag to publish after a publish-only failure.
         required: true
         type: string
+      bootstrap_private:
+        description: Publish a new private coordinate without waiting for public resolution.
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -77,9 +82,14 @@ jobs:
       - name: Publish registry artifact
         env:
           MOONSTONE_TOKEN: ${{ secrets.MOONSTONE_TOKEN }}
-          MOONSTONE_ARTIFACT_URL: ${{ env.MOONSTONE_ARTIFACT_URL }}
+          BOOTSTRAP_PRIVATE: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap_private || 'false' }}
         run: |
+          set -eu
           test -n "$MOONSTONE_TOKEN"
+          # New coordinates begin private and therefore require a
+          # registry-owned blob. This remains valid after public promotion.
+          unset MOONSTONE_ARTIFACT_URL
           dist/registry/publish.sh
-      - name: Verify published package is resolvable
-        run: .ci/ballad/scripts/wait-for-publication.sh dist/registry/package.toml
+          if [ "$BOOTSTRAP_PRIVATE" != "true" ]; then
+            .ci/ballad/scripts/wait-for-publication.sh dist/registry/package.toml
+          fi
