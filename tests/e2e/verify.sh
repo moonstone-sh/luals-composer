@@ -78,11 +78,11 @@ cat > "$OUT/ws-3plug/luals-composer.json" <<EOF
   "package": "moonstone/luals-composer",
   // hydronium-luax first: it owns whole regions of .luax and must win conflicts
   "plugins": [
-    { "path": "$HYD", "name": "hydronium-luax", "transport": "^0.1.0",
+    { "path": "$HYD", "name": "hydronium-luax", "transport": "^0.2.0",
       "contract": 1, "text_edits": "ranges", "args": [] },
-    { "path": "$VAL", "name": "valua", "transport": "^0.1.0",
+    { "path": "$VAL", "name": "valua", "transport": "^0.2.0",
       "contract": 1, "text_edits": "insertions", "args": [] },
-    { "path": "$CLI", "name": "clingy", "transport": "^0.1.0",
+    { "path": "$CLI", "name": "clingy", "transport": "^0.2.0",
       "contract": 1, "text_edits": "insertions", "args": [] }
   ]
 }

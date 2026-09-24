@@ -120,11 +120,11 @@ for m in undescribed impostor badmode; do
   echo 'function OnSetText() return nil end' > "$ETREE/$m/luals/plugin.lua"
 done
 cat > "$ETREE/impostor/luals-plugin.lua" <<'EOF'
-return { name = "valua", path = "luals/plugin.lua", transport = "^0.1.0",
+return { name = "valua", path = "luals/plugin.lua", transport = "^0.2.0",
          contract = 1, text_edits = "insertions", args = {} }
 EOF
 cat > "$ETREE/badmode/luals-plugin.lua" <<'EOF'
-return { name = "badmode", path = "luals/plugin.lua", transport = "^0.1.0",
+return { name = "badmode", path = "luals/plugin.lua", transport = "^0.2.0",
          contract = 1, text_edits = "rewrite-the-whole-thing", args = {} }
 EOF
 

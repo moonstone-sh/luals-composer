@@ -37,7 +37,7 @@ local GOOD = [[
 return {
   name = "subject",
   path = "luals/plugin.lua",
-  transport = "^0.1.0",
+  transport = "^0.2.0",
   contract = 1,
   text_edits = "insertions",
   args = {},
@@ -116,7 +116,7 @@ describe("manifest resolution", function()
     local descriptor = assert(manifest.resolve(root, { name = "subject" }))
     assert_equal(descriptor.name, "subject")
     assert_equal(descriptor.path, ".moonstone/env/share/lua/5.4/subject/luals/plugin.lua")
-    assert_equal(descriptor.transport, "^0.1.0")
+    assert_equal(descriptor.transport, "^0.2.0")
     assert_equal(descriptor.contract, 1)
     assert_equal(descriptor.text_edits, "insertions")
     assert_same(descriptor.args, {})

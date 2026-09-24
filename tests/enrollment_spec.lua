@@ -48,7 +48,7 @@ abi = "lua54"
     if not options.transport_unidentified then
       write(transport_dir .. "/version.lua",
         ('return { PACKAGE = "moonstone/luals-composer", VERSION = %q, CONTRACT = 1, ENTRY_RELPATH = "luals_composer/init.lua" }\n')
-          :format(options.transport_version or "0.1.0"))
+          :format(options.transport_version or "0.2.0"))
     end
   end
 
@@ -62,7 +62,7 @@ local function descriptor(root, overrides)
   local value = {
     name = "subject",
     path = root .. "/plugins/subject.lua",
-    transport = "^0.1.0",
+    transport = "^0.2.0",
     contract = 1,
     text_edits = "insertions",
     args = {},
@@ -100,7 +100,7 @@ describe("enrollment planning", function()
     assert_equal(plan.config, root .. "/.luarc.json")
     assert_equal(plan.registry, root .. "/luals-composer.json")
     assert_equal(plan.transport.package, "moonstone/luals-composer")
-    assert_equal(plan.transport.version, "0.1.0")
+    assert_equal(plan.transport.version, "0.2.0")
     assert_equal(plan.transport.contract, 1)
     assert_equal(plan.plugin.name, "subject")
     assert_nil(read(plan.config))
@@ -221,7 +221,7 @@ describe("enrollment migration and ordering", function()
   "version": 1,
   "package": "moonstone/luals-composer",
   "plugins": [
-    { "name": "off", "path": "plugins/other.lua", "transport": "^0.1.0",
+    { "name": "off", "path": "plugins/other.lua", "transport": "^0.2.0",
       "contract": 1, "text_edits": "insertions", "args": [],
       "enabled": false }
   ]
@@ -409,7 +409,7 @@ local SELF_DESCRIPTION = [[
 return {
   name = "subject",
   path = "luals/plugin.lua",
-  transport = "^0.1.0",
+  transport = "^0.2.0",
   contract = 1,
   text_edits = "insertions",
   args = {},
@@ -440,7 +440,7 @@ describe("enrollment by package name", function()
     assert_equal(install(named_root, "subject", SELF_DESCRIPTION), relative)
 
     local typed = assert(api.plan({ root = typed_root, plugin = {
-      name = "subject", path = relative, transport = "^0.1.0",
+      name = "subject", path = relative, transport = "^0.2.0",
       contract = 1, text_edits = "insertions", args = {},
     } }))
     local named = assert(api.plan({ root = named_root, plugin = "subject" }))
@@ -502,7 +502,7 @@ describe("enrollment by package name", function()
       plugin = { name = "subject", text_edits = "ranges", args = { "--verbose" } } }))
     assert_equal(plan.plugin.text_edits, "ranges", "the caller's mode must win")
     assert_same(plan.plugin.args, { "--verbose" })
-    assert_equal(plan.plugin.transport, "^0.1.0", "unspecified fields still come from the manifest")
+    assert_equal(plan.plugin.transport, "^0.2.0", "unspecified fields still come from the manifest")
   end)
 
   it("routes a self-described descriptor through the same contract validation", function()
@@ -518,7 +518,7 @@ describe("enrollment by package name", function()
 
   it("refuses a manifest whose declared transport range excludes the installed Composer", function()
     local root = fixture()
-    install(root, "subject", (SELF_DESCRIPTION:gsub('"%^0%.1%.0"', '"^9.0.0"')))
+    install(root, "subject", (SELF_DESCRIPTION:gsub('"%^0%.2%.0"', '"^9.0.0"')))
     local plan, err = api.plan({ root = root, plugin = "subject" })
     assert_nil(plan)
     assert_error_code(err, "transport_incompatible")

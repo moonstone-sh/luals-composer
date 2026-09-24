@@ -11,7 +11,7 @@
 
 return {
   PACKAGE = 'moonstone/luals-composer',
-  VERSION = '0.1.0',
+  VERSION = '0.2.1',
   CONTRACT = 1,
 
   --- Module path of the plugin entry point, relative to a Lua tree root.

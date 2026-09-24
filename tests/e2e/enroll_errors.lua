@@ -36,7 +36,7 @@ local result, err = api.enroll({
   root = workspace,
   plugin = { name = 'undescribed',
     path = '.moonstone/env/share/lua/5.1/undescribed/luals/plugin.lua',
-    transport = '^0.1.0', contract = 1, text_edits = 'insertions', args = {} },
+    transport = '^0.2.0', contract = 1, text_edits = 'insertions', args = {} },
 })
 if not result then
   io.stderr:write(('explicit fallback FAILED: [%s] %s\n'):format(err.code, err.message))

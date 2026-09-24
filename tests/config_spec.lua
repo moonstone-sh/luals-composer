@@ -173,7 +173,7 @@ describe("config.resolve — explicit managed sidecar selection", function()
     local entries = {}
     for _, plugin in ipairs(plugins) do
       entries[#entries + 1] = ([[
-        { "name": %q, "path": %q, "transport": "^0.1.0",
+        { "name": %q, "path": %q, "transport": "^0.2.0",
           "contract": 1, "text_edits": %q,
           "enabled": %s, "args": [] }
       ]]):format(plugin.name, plugin.path, plugin.text_edits or "insertions",

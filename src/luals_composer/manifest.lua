@@ -56,7 +56,7 @@
       return {
         name       = "valua",
         path       = "tooling/luals/plugin.lua",  -- relative to THIS file
-        transport  = "^0.1.0",
+        transport  = "^0.2.0",
         contract   = 1,
         text_edits = "insertions",
         args       = {},

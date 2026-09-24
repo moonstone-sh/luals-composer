@@ -29,7 +29,7 @@ local function transport_over(specs)
 end
 
 local function managed(spec, mode, args)
-  spec.transport = "^0.1.0"
+  spec.transport = "^0.2.0"
   spec.contract = 1
   spec.text_edits = mode or "insertions"
   spec.args = args or {}

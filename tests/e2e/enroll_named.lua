@@ -36,17 +36,17 @@ local requests = {
   {
     named = { name = 'hydronium-luax', priority = 'first' },
     typed = { name = 'hydronium-luax', path = TREE .. 'hydronium_luax/luals/init.lua',
-      transport = '^0.1.0', contract = 1, text_edits = 'ranges', args = {}, priority = 'first' },
+      transport = '^0.2.0', contract = 1, text_edits = 'ranges', args = {}, priority = 'first' },
   },
   {
     named = 'valua',
     typed = { name = 'valua', path = TREE .. 'valua/tooling/luals/plugin.lua',
-      transport = '^0.1.0', contract = 1, text_edits = 'insertions', args = {} },
+      transport = '^0.2.0', contract = 1, text_edits = 'insertions', args = {} },
   },
   {
     named = 'clingy',
     typed = { name = 'clingy', path = TREE .. 'clingy/luals/plugin.lua',
-      transport = '^0.1.0', contract = 1, text_edits = 'insertions', args = {} },
+      transport = '^0.2.0', contract = 1, text_edits = 'insertions', args = {} },
   },
 }
 

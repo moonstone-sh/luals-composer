@@ -24,7 +24,7 @@ local plan, err = transport.plan({
   plugin = {
     name = "clingy",
     path = ".moonstone/env/share/lua/5.4/clingy/luals/plugin.lua",
-    transport = "^0.1.0",
+    transport = "^0.2.0",
     contract = 1,
     text_edits = "insertions",
     args = {},
@@ -62,7 +62,7 @@ descriptor table, loaded in an empty environment so it can reach no global:
 return {
   name       = "valua",
   path       = "tooling/luals/plugin.lua",  -- relative to this file
-  transport  = "^0.1.0",
+  transport  = "^0.2.0",
   contract   = 1,
   text_edits = "insertions",
   args       = {},
@@ -109,7 +109,7 @@ Enrollment maintains the project-root `.luarc.json` and `luals-composer.json`:
   "plugins": [{
     "name": "clingy",
     "path": ".moonstone/env/share/lua/5.4/clingy/luals/plugin.lua",
-    "transport": "^0.1.0",
+    "transport": "^0.2.0",
     "contract": 1,
     "text_edits": "insertions",
     "args": []
