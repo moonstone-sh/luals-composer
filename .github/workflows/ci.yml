@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: moonstone-sh/ballad
-          ref: af29ad4
+          ref: af29ad4224bcd7ec48c371154fbc3b46fb29a9e5
           path: .ci/ballad
       - uses: actions/checkout@v4
         with:
