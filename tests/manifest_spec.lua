@@ -1,6 +1,6 @@
 local manifest = require("luals_composer.manifest")
 
-local TMP = os.tmpname()
+local TMP = (os.tmpname():gsub("\\", "/"))
 os.remove(TMP)
 require("tests.support").mkdir(TMP)
 

@@ -1,6 +1,6 @@
 local project = require("luals_composer.project")
 
-local TMP = os.tmpname()
+local TMP = (os.tmpname():gsub("\\", "/"))
 os.remove(TMP)
 require("tests.support").mkdir(TMP)
 

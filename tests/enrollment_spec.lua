@@ -1,7 +1,7 @@
 local api = require("luals_composer")
 local json = require("luals_composer.json")
 
-local TMP = os.tmpname()
+local TMP = (os.tmpname():gsub("\\", "/"))
 os.remove(TMP)
 require("tests.support").mkdir(TMP)
 

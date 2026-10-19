@@ -10,7 +10,7 @@ local log = require("luals_composer.log")
 
 log.to_stderr = false
 
-local TMP = os.tmpname()
+local TMP = (os.tmpname():gsub("\\", "/"))
 os.remove(TMP)
 require("tests.support").mkdir(TMP)
 

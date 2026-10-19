@@ -9,7 +9,7 @@ local log = require("luals_composer.log")
 
 log.to_stderr = false -- keep expected-failure noise out of the test output
 
-local TMP = os.tmpname()
+local TMP = (os.tmpname():gsub("\\", "/"))
 os.remove(TMP)
 require("tests.support").mkdir(TMP)
 

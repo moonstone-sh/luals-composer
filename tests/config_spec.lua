@@ -2,7 +2,7 @@ local config = require("luals_composer.config")
 
 --- Scratch directory for real config files. Tests write real files rather than
 --- mocking io, so path resolution is exercised for real.
-local TMP = os.tmpname()
+local TMP = (os.tmpname():gsub("\\", "/"))
 os.remove(TMP)
 require("tests.support").mkdir(TMP)
 
