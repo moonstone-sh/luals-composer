@@ -12,7 +12,7 @@ log.to_stderr = false
 
 local TMP = os.tmpname()
 os.remove(TMP)
-os.execute("mkdir -p " .. TMP)
+require("tests.support").mkdir(TMP)
 
 local counter = 0
 local function child(source)

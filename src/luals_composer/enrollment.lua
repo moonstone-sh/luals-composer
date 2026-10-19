@@ -97,7 +97,7 @@ function M.plan(opts)
   if type(opts) ~= 'table' then return failure('invalid_options', 'plan options must be a table') end
   local root = opts.root or opts.cwd
   if type(root) ~= 'string' or root == '' then return failure('invalid_options', 'root must name the project directory') end
-  root = root:gsub('/+$', '')
+  root = root:gsub('\\', '/'):gsub('/+$', '')
   if root == '' then root = '/' end
   local plugin = clone(opts.plugin)
   -- `plugin = "valua"` is shorthand for `plugin = { name = "valua" }`; both ask

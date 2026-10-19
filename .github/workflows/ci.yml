@@ -45,3 +45,36 @@ jobs:
           grep -q '^kind = "source"$' "$descriptor"
           grep -q 'name = "luals_composer.lua"' "$descriptor"
           grep -q 'name = "luals_composer/init.lua"' "$descriptor"
+
+  windows:
+    name: Native Windows enrollment and transport
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: moonstone-sh/moonstone
+          ref: 69d2859c80a8b3221e9368d6414ba11fdef486de
+          path: .ci/moonstone
+      - uses: actions/checkout@v4
+        with:
+          repository: moonstone-sh/ballad
+          ref: af29ad4
+          path: .ci/ballad
+      - uses: actions/checkout@v4
+        with:
+          repository: moonstone-sh/alter
+          ref: 15db7995ba84a4c33d7f81b782abd0ec151929ed
+          path: .ci/alter
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+      - name: Build Moonstone
+        working-directory: .ci/moonstone
+        run: zig build
+      - name: Exercise source export and installed transport
+        shell: pwsh
+        run: |
+          $env:MOONSTONE_BIN = "$env:GITHUB_WORKSPACE/.ci/moonstone/zig-out/bin/moon.exe"
+          python tests/platform/native_lifecycle.py
+          if ($LASTEXITCODE -ne 0) { throw 'Composer lifecycle failed' }

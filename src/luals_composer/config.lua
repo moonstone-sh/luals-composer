@@ -58,16 +58,23 @@ M.ENV_CONFIG = 'LUALS_COMPOSER_CONFIG'
 ---@param p string
 ---@return boolean
 function M.is_absolute(p)
-  return p:sub(1, 1) == '/' or p:match('^%a:[/\\]') ~= nil
+  p = p:gsub('\\', '/')
+  return p:sub(1, 1) == '/' or p:match('^%a:/') ~= nil
 end
 
 ---@param uri string?
 ---@return string? path
 function M.uri_to_path(uri)
   if type(uri) ~= 'string' then return nil end
-  local p = uri:gsub('^file://', '')
+  local p = uri
+  if uri:sub(1, 7) == 'file://' then
+    p = uri:sub(8)
+    if p:sub(1, 10) == 'localhost/' then p = p:sub(10) end
+    if p:sub(1, 1) ~= '/' then p = '//' .. p end
+  end
   if p == '' then return nil end
   p = p:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
+  if p:match('^/%a:/') then p = p:sub(2) end
   return p
 end
 

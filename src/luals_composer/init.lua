@@ -41,6 +41,7 @@ local _chunk, scope_uri, plugin_args = ...
 do
   local info = debug.getinfo(1, 'S')
   local self_path = info and info.source and info.source:gsub('^@', '') or ''
+  self_path = self_path:gsub('\\', '/')
   local src_root = self_path:match('^(.*)/luals_composer/init%.lua$')
   if src_root and src_root ~= '' then
     for _, pattern in ipairs({ src_root .. '/?.lua', src_root .. '/?/init.lua' }) do

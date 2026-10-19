@@ -3,7 +3,7 @@ local json = require("luals_composer.json")
 
 local TMP = os.tmpname()
 os.remove(TMP)
-os.execute("mkdir -p " .. TMP)
+require("tests.support").mkdir(TMP)
 
 local serial = 0
 local function write(path, contents)
@@ -21,7 +21,7 @@ local function read(path)
 end
 
 local function mkdir(path)
-  assert_equal(os.execute("mkdir -p " .. path), true)
+  assert_equal(require("tests.support").mkdir(path), true)
 end
 
 local function fixture(options)
