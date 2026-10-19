@@ -1,10 +1,13 @@
 """Exercise Composer enrollment and installed plugin dispatch on each host."""
 import os
+import sys
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 import tarfile
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 repo = Path(__file__).resolve().parents[2]
 moon = os.environ.get('MOONSTONE_BIN') or shutil.which('moon')
@@ -15,7 +18,7 @@ with tempfile.TemporaryDirectory(prefix='composer lifecycle ') as directory:
     root = Path(directory)/'composer'
     shutil.copytree(repo, root, ignore=shutil.ignore_patterns('.git', '.ci', '.moonstone', '.ballad', 'dist', 'node_modules'))
     def run(project, *args):
-        result = subprocess.run([moon, '-C', str(project), *args], capture_output=True, text=True, timeout=600)
+        result = subprocess.run([moon, '-C', str(project), *args], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
         assert result.returncode == 0, (args, result.stdout, result.stderr)
         print(result.stdout)
     for name, source, tool in [('moonstone/ballad',ballad,True), ('moonstone/alter',alter/'host',False), ('moonstone/alter-jsonc',alter/'jsonc-backend',False)]:
