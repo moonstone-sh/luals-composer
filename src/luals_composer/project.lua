@@ -40,6 +40,13 @@ end
 
 ---@param path string
 ---@return string?
+function M.directory_exists(path)
+  -- Windows refuses io.open on directories. A self-rename probes existence
+  -- without changing the path; CRT access/existence errors also identify it.
+  local ok, _, code = os.rename(path, path)
+  return ok == true or code == 13 or code == 17
+end
+
 function M.parent(path)
   path = path:gsub('\\', '/')
   if path:match('^%a:/*$') or path:match('^//[^/]+/[^/]+/*$') then return nil end
