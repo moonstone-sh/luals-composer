@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: moonstone-sh/alter
-          ref: 1eacfd0c5a6d0aefb6ed542281a897f67fdf7370
+          ref: 14549b1ff52a9305a673c9844d7df11f9de97117
           path: .ci/alter
       - uses: mlugg/setup-zig@v2
         with:
