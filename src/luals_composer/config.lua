@@ -81,7 +81,10 @@ end
 ---@param p string
 ---@return string
 function M.dirname(p)
-  return p:match('^(.*)[/\\][^/\\]*$') or '.'
+  local parent = p:match('^(.*)[/\\][^/\\]*$')
+  if parent == '' then return '/' end
+  if parent and parent:match('^%a:$') then return parent .. '/' end
+  return parent or '.'
 end
 
 --- Resolve one configured path against a base directory.
