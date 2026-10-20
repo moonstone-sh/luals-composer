@@ -2,9 +2,9 @@ local config = require("luals_composer.config")
 
 --- Scratch directory for real config files. Tests write real files rather than
 --- mocking io, so path resolution is exercised for real.
-local TMP = os.tmpname()
+local TMP = (os.tmpname():gsub("\\", "/"))
 os.remove(TMP)
-os.execute("mkdir -p " .. TMP)
+require("tests.support").mkdir(TMP)
 
 local function write(path, contents)
   local fh = assert(io.open(path, "wb"))
@@ -90,7 +90,7 @@ describe("config.resolve — luals-composer.json", function()
   it("reads the sidecar file when no args are given", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/ws1"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     write(ws .. "/" .. config.CONFIG_BASENAME, [[
       {
         // hydronium must win range conflicts, so it comes first
@@ -113,7 +113,7 @@ describe("config.resolve — luals-composer.json", function()
   it("reports invalid JSON instead of silently composing nothing", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/ws2"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     write(ws .. "/" .. config.CONFIG_BASENAME, "{ not json")
 
     local c = config.resolve({ uri = "file://" .. ws })
@@ -125,7 +125,7 @@ describe("config.resolve — luals-composer.json", function()
   it("reports a config file with no plugins array", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/ws3"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     write(ws .. "/" .. config.CONFIG_BASENAME, '{ "settings": {} }')
 
     local c = config.resolve({ uri = "file://" .. ws })
@@ -136,7 +136,7 @@ describe("config.resolve — luals-composer.json", function()
   it("carries a settings table through", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/ws4"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     write(ws .. "/" .. config.CONFIG_BASENAME,
       '{ "plugins": ["/a.lua"], "settings": { "logToStderr": false } }')
 
@@ -149,7 +149,7 @@ describe("config.resolve — precedence", function()
   it("prefers pluginArgs over the sidecar file", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/ws5"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     write(ws .. "/" .. config.CONFIG_BASENAME, '{ "plugins": ["/from-file.lua"] }')
 
     local c = config.resolve({ uri = "file://" .. ws, args = { "/from-args.lua" } })
@@ -160,7 +160,7 @@ describe("config.resolve — precedence", function()
   it("composes nothing, without erroring, when unconfigured", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/ws6"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     local c = config.resolve({ uri = "file://" .. ws })
     assert_equal(#c.plugins, 0)
     assert_equal(c.source, "none")
@@ -186,7 +186,7 @@ describe("config.resolve — explicit managed sidecar selection", function()
   it("gives --config= precedence over the conventional sidecar", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/selector-precedence"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     write(ws .. "/" .. config.CONFIG_BASENAME,
       managed({ { name = "default", path = "/default.lua" } }))
     write(ws .. "/chosen.json",
@@ -205,7 +205,7 @@ describe("config.resolve — explicit managed sidecar selection", function()
   it("refuses a missing selector value", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/selector-missing"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     local c = config.resolve({ uri = "file://" .. ws, args = { "--config" } })
     assert_equal(#c.plugins, 0)
     assert_true(#c.errors > 0)
@@ -215,7 +215,7 @@ describe("config.resolve — explicit managed sidecar selection", function()
   it("refuses duplicate selectors", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/selector-duplicate"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     write(ws .. "/one.json", managed({ { name = "one", path = "/one.lua" } }))
     write(ws .. "/two.json", managed({ { name = "two", path = "/two.lua" } }))
     local c = config.resolve({
@@ -230,7 +230,7 @@ describe("config.resolve — explicit managed sidecar selection", function()
   it("refuses mixed selector and legacy child paths", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/selector-mixed"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     write(ws .. "/chosen.json", managed({ { name = "chosen", path = "/chosen.lua" } }))
     local c = config.resolve({
       uri = "file://" .. ws,
@@ -244,7 +244,7 @@ describe("config.resolve — explicit managed sidecar selection", function()
   it("preserves sidecar order while excluding disabled children", function()
     if not env_is_clean() then return end
     local ws = TMP .. "/selector-order"
-    os.execute("mkdir -p " .. ws)
+    require("tests.support").mkdir(ws)
     write(ws .. "/chosen.json", managed({
       { name = "later", path = "/later.lua", text_edits = "ranges" },
       { name = "off", path = "/off.lua", enabled = false },
@@ -260,5 +260,22 @@ describe("config.resolve — explicit managed sidecar selection", function()
     assert_equal(c.plugins[1].contract, 1)
     assert_equal(c.plugins[1].text_edits, "ranges")
     assert_equal(c.plugins[2].text_edits, "insertions")
+  end)
+end)
+
+describe("Windows file URIs", function()
+  it("decodes drive paths, localhost and UNC authorities", function()
+    assert_equal(config.uri_to_path('file:///C:/My%20Project/src/main.lua'), 'C:/My Project/src/main.lua')
+    assert_equal(config.uri_to_path('file://localhost/C:/demo/main.lua'), 'C:/demo/main.lua')
+    assert_equal(config.uri_to_path('file://server/share/main.lua'), '//server/share/main.lua')
+    assert_true(config.is_absolute([[\\server\share\main.lua]]))
+  end)
+end)
+
+describe("root directory paths", function()
+  it("preserves drive and POSIX roots when resolving a file's directory", function()
+    assert_equal(config.dirname("C:/main.lua"), "C:/")
+    assert_equal(config.dirname([[C:\main.lua]]), "C:/")
+    assert_equal(config.dirname("/main.lua"), "/")
   end)
 end)

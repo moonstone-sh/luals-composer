@@ -182,3 +182,16 @@ Run `moon run test`, `moon run test-e2e`, `moon run test-e2e-named`, and
 `moon run package`. Packaging must retain both the public `luals_composer.lua` file and executable
 `luals_composer/init.lua` file. See [REGISTRY_README.md](REGISTRY_README.md) for
 the installable package instructions.
+
+### Windows development checks
+
+Composer normalizes drive and UNC paths when resolving projects and enrollment
+paths, and accepts Windows `file:` URIs from LuaLS. The transport remains plain
+Lua; it does not need a shell to dispatch plugin hooks.
+
+`tests/platform/native_lifecycle.py` runs the unit suite, exports the source
+package, then installs it in a fresh Moonstone project and checks enrollment,
+repeat enrollment, and the LuaLS plugin loading contract. Set `MOONSTONE_BIN`,
+`BALLAD_SOURCE`, and `ALTER_SOURCE` to source checkouts when running locally.
+The Windows workflow pins the framework changes it needs. The Bash-based real
+LuaLS LSP fixtures remain a separate test suite.

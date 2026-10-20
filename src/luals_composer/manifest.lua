@@ -156,7 +156,7 @@ function M.resolve(root, request)
   local absolute_manifest = project.absolute(manifest_path, root)
 
   if not project.exists(absolute_manifest) then
-    if not project.exists(absolute_root) then
+    if not project.directory_exists(absolute_root) then
       return nil, ("no installed package provides '%s': nothing is materialised at %s. "
         .. "Add it as a dependency and run `moon sync`, or enroll it with an explicit descriptor: "
         .. "plugin = { name = %q, path = ..., transport = ..., contract = ..., text_edits = ... }.")

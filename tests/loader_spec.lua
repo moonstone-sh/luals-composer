@@ -9,9 +9,9 @@ local log = require("luals_composer.log")
 
 log.to_stderr = false -- keep expected-failure noise out of the test output
 
-local TMP = os.tmpname()
+local TMP = (os.tmpname():gsub("\\", "/"))
 os.remove(TMP)
-os.execute("mkdir -p " .. TMP)
+require("tests.support").mkdir(TMP)
 
 local counter = 0
 local function plugin_file(source)
@@ -146,7 +146,7 @@ describe("loader.load_all", function()
 
   it("adds each child's directory to package.path so it can require siblings", function()
     local dir = TMP .. "/withdeps"
-    os.execute("mkdir -p " .. dir)
+    require("tests.support").mkdir(dir)
     local fh = assert(io.open(dir .. "/helper.lua", "wb"))
     fh:write("return { value = 'from-helper' }")
     fh:close()

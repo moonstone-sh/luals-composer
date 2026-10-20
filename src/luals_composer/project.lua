@@ -39,10 +39,22 @@ function M.exists(path)
 end
 
 ---@param path string
+---@return boolean
+function M.directory_exists(path)
+  -- Windows refuses io.open on directories. A self-rename probes existence
+  -- without changing the path; CRT access/existence errors also identify it.
+  local ok, _, code = os.rename(path, path)
+  return ok == true or code == 13 or code == 17
+end
+
+---@param path string
 ---@return string?
 function M.parent(path)
-  local p = path:match('^(.*)/[^/]+$')
+  path = path:gsub('\\', '/')
+  if path:match('^%a:/*$') or path:match('^//[^/]+/[^/]+/*$') then return nil end
+  local p = path:match('^(.*)/[^/]+/*$')
   if p == '' then return '/' end
+  if p and p:match('^%a:$') then return p .. '/' end
   return p
 end
 
@@ -51,6 +63,7 @@ end
 ---@param start string
 ---@return string root
 function M.find_root(start)
+  start = start:gsub('\\', '/')
   local current = start
   while current and current ~= '' do
     if M.exists(current .. '/' .. M.MANIFEST_BASENAME) then return current end
@@ -115,8 +128,9 @@ end
 ---@param root string
 ---@return string
 function M.absolute(path, root)
-  if path:sub(1, 1) == '/' or path:match('^%a:[/\\]') then return path end
-  return root .. '/' .. path
+  path, root = path:gsub('\\', '/'), root:gsub('\\', '/')
+  if path:sub(1, 1) == '/' or path:match('^%a:/') then return path end
+  return root:gsub('/+$', '') .. '/' .. path
 end
 
 --- Express `path` relative to `root` when it sits underneath it.
@@ -128,9 +142,14 @@ end
 ---@param root string
 ---@return string
 function M.portable(path, root)
-  if path:sub(1, 1) ~= '/' then return path end
-  local prefix = root .. '/'
-  if path:sub(1, #prefix) == prefix then return path:sub(#prefix + 1) end
+  path, root = path:gsub('\\', '/'), root:gsub('\\', '/')
+  if path:sub(1, 1) ~= '/' and not path:match('^%a:/') then return path end
+  local prefix = root:gsub('/+$', '') .. '/'
+  local actual, expected = path, prefix
+  if path:match('^%a:/') or path:sub(1,2) == '//' then
+    actual, expected = actual:lower(), expected:lower()
+  end
+  if actual:sub(1, #expected) == expected then return path:sub(#prefix + 1) end
   return path
 end
 

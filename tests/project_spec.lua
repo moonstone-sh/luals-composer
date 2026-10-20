@@ -1,14 +1,14 @@
 local project = require("luals_composer.project")
 
-local TMP = os.tmpname()
+local TMP = (os.tmpname():gsub("\\", "/"))
 os.remove(TMP)
-os.execute("mkdir -p " .. TMP)
+require("tests.support").mkdir(TMP)
 
 local serial = 0
 local function scratch()
   serial = serial + 1
   local root = TMP .. "/p" .. serial
-  assert_equal(os.execute("mkdir -p " .. root .. "/.moonstone/env"), true)
+  assert_equal(require("tests.support").mkdir(root .. "/.moonstone/env"), true)
   return root
 end
 
@@ -22,7 +22,7 @@ describe("project identity", function()
   it("finds the nearest Moonstone project from a nested path", function()
     local root = scratch()
     write(root .. "/moonstone.toml", '[package]\nname = "demo"\nversion = "1.0.0"\n')
-    os.execute("mkdir -p " .. root .. "/a/b")
+    require("tests.support").mkdir(root .. "/a/b")
     assert_equal(project.find_root(root .. "/a/b"), root)
   end)
 
@@ -72,7 +72,7 @@ abi = "lua51"
   it("reads installed identity without executing arbitrary version modules", function()
     local root = scratch()
     local dir = root .. "/luals_composer"
-    os.execute("mkdir -p " .. dir)
+    require("tests.support").mkdir(dir)
     write(dir .. "/init.lua", "return {}")
     write(dir .. "/version.lua", [[
       HARMFUL_VERSION_SIDE_EFFECT = true
@@ -88,5 +88,20 @@ abi = "lua51"
     assert_equal(identity.VERSION, "0.1.0")
     assert_nil(_G.HARMFUL_VERSION_SIDE_EFFECT,
       "reading installed metadata must not mutate caller globals")
+  end)
+end)
+
+describe("Windows project paths", function()
+  it("walks drive and UNC paths without escaping their root", function()
+    assert_equal(project.parent([[C:\Users\Ada\project]]), 'C:/Users/Ada')
+    assert_equal(project.parent([[C:\project]]), 'C:/')
+    assert_equal(project.parent('C:/'), nil)
+    assert_equal(project.parent([[\\server\share\project]]), '//server/share')
+    assert_equal(project.parent([[\\server\share]]), nil)
+  end)
+  it("keeps in-project Windows paths relative with a directory boundary", function()
+    assert_equal(project.portable([[C:\Workspace\demo\plugin.lua]], [[c:\workspace\demo]]), 'plugin.lua')
+    assert_equal(project.portable('C:/demo-other/plugin.lua', 'C:/demo'), 'C:/demo-other/plugin.lua')
+    assert_equal(project.absolute([[\\server\share\plugin.lua]], 'C:/demo'), '//server/share/plugin.lua')
   end)
 end)
